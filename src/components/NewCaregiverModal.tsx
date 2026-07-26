@@ -116,6 +116,18 @@ export const NewCaregiverModal: React.FC<NewCaregiverModalProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-3 text-xs">
+          <div className="bg-teal-50 border border-teal-200 rounded-xl p-2.5 flex items-center justify-between text-teal-800">
+            <span className="font-medium">初次申辦/新案件雇主？</span>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSdR0M7t3BOZljfY4GBBFTwXJQLyrQE-Q9o-Ap8MJobziq2FSg/viewform?usp=publish-editor"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-teal-600 hover:bg-teal-700 text-white font-bold px-2.5 py-1 rounded-lg text-[11px] flex items-center gap-1 transition"
+            >
+              填寫 Google 表單 ↗
+            </a>
+          </div>
+
           <div>
             <label className="font-bold text-slate-700 block mb-1">看護工姓名：</label>
             <input

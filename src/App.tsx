@@ -10,7 +10,8 @@ import { DocumentSigningModule } from './components/DocumentSigningModule';
 import { AiAssistantModule } from './components/AiAssistantModule';
 import { CaregiverProfileModal } from './components/CaregiverProfileModal';
 import { NewCaregiverModal } from './components/NewCaregiverModal';
-import { HeartPulse, Clock, FileSignature, Bot, ShieldCheck, CheckCircle2, AlertTriangle, Calendar, FileText, Send } from 'lucide-react';
+import { NewCaseGoogleFormModal } from './components/NewCaseGoogleFormModal';
+import { HeartPulse, Clock, FileSignature, Bot, ShieldCheck, CheckCircle2, AlertTriangle, Calendar, FileText, Send, ClipboardList } from 'lucide-react';
 import { sendWebPushNotification } from './utils/pushNotification';
 
 export default function App() {
@@ -34,8 +35,30 @@ export default function App() {
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isNewCaregiverModalOpen, setIsNewCaregiverModalOpen] = useState(false);
+  const [isNewCaseFormOpen, setIsNewCaseFormOpen] = useState(false);
   const [pushEnabled, setPushEnabled] = useState(true);
   const [docToSignId, setDocToSignId] = useState<string | null>(null);
+
+  // Theme state: dark / light
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('caregiver_app_theme');
+    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('caregiver_app_theme', theme);
+    if (theme === 'light') {
+      document.documentElement.classList.add('light-mode');
+      document.documentElement.classList.remove('dark');
+    } else {
+      document.documentElement.classList.remove('light-mode');
+      document.documentElement.classList.add('dark');
+    }
+  }, [theme]);
+
+  const handleToggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Sync state to local storage
   useEffect(() => {
@@ -181,8 +204,12 @@ export default function App() {
   const pendingHealthChecksCount = activeCaregiver.healthChecks.filter((h) => h.status === 'pending').length;
   const pendingDocsCount = activeCaregiver.documents.filter((d) => d.status === 'pending_signature').length;
 
+  const isLight = theme === 'light';
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased">
+    <div className={`min-h-screen flex flex-col font-sans antialiased transition-colors duration-300 ${
+      isLight ? 'bg-slate-100 text-slate-900' : 'bg-slate-950 text-slate-100'
+    }`}>
       
       {/* App Header Bar */}
       <Header
@@ -192,16 +219,21 @@ export default function App() {
         notifications={notifications}
         onOpenNotifications={() => setIsNotificationOpen(true)}
         onOpenNewCaregiverModal={() => setIsNewCaregiverModalOpen(true)}
+        onOpenNewCaseFormModal={() => setIsNewCaseFormOpen(true)}
         onOpenProfileModal={() => setIsProfileModalOpen(true)}
         pushEnabled={pushEnabled}
         setPushEnabled={setPushEnabled}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         
         {/* Caregiver Quick Status Banner */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className={`border rounded-2xl p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors ${
+          isLight ? 'bg-white border-slate-200 text-slate-800' : 'bg-slate-900 border-slate-800 text-slate-100 shadow-lg'
+        }`}>
           <div className="flex items-center space-x-3.5">
             <img
               src={activeCaregiver.avatarUrl}
@@ -210,13 +242,15 @@ export default function App() {
             />
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-base font-bold text-slate-100">{activeCaregiver.name}</h1>
-                <span className="text-xs font-semibold bg-slate-800 text-teal-300 px-2.5 py-0.5 rounded-full border border-slate-700">
+                <h1 className={`text-base font-bold ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>{activeCaregiver.name}</h1>
+                <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${
+                  isLight ? 'bg-slate-100 text-teal-800 border-slate-300' : 'bg-slate-800 text-teal-300 border-slate-700'
+                }`}>
                   {activeCaregiver.nationality}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                居留證 (ARC): <span className="font-mono text-slate-200">{activeCaregiver.arcNumber}</span> (效期至 {activeCaregiver.arcExpiryDate})
+              <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                居留證 (ARC): <span className={`font-mono font-medium ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>{activeCaregiver.arcNumber}</span> (效期至 {activeCaregiver.arcExpiryDate})
               </p>
             </div>
           </div>
@@ -226,11 +260,13 @@ export default function App() {
             {pendingHealthChecksCount > 0 && (
               <button
                 onClick={() => setActiveTab('health_checks')}
-                className="bg-slate-800 hover:bg-slate-750 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition cursor-pointer border ${
+                  isLight ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100' : 'bg-slate-800 hover:bg-slate-750 text-amber-300 border-amber-500/30'
+                }`}
                 title="點擊切換至定期健檢頁面"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-breathing" />
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-breathing" />
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-500" />
                 <span>待辦體檢：{pendingHealthChecksCount} 項</span>
               </button>
             )}
@@ -238,26 +274,43 @@ export default function App() {
             {pendingDocsCount > 0 && (
               <button
                 onClick={() => setActiveTab('documents')}
-                className="bg-slate-800 hover:bg-slate-750 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition cursor-pointer border ${
+                  isLight ? 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100' : 'bg-slate-800 hover:bg-slate-750 text-rose-300 border-rose-500/30'
+                }`}
                 title="點擊切換至線上簽章頁面"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-breathing" />
-                <FileSignature className="w-3.5 h-3.5 text-rose-400" />
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-breathing" />
+                <FileSignature className="w-3.5 h-3.5 text-rose-500" />
                 <span>待簽文件：{pendingDocsCount} 份</span>
               </button>
             )}
 
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/80 px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-xs"
+              className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-xs border ${
+                isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300' : 'bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border-slate-700/80'
+              }`}
             >
               個案檔案
+            </button>
+
+            <button
+              onClick={() => setIsNewCaseFormOpen(true)}
+              className={`px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition cursor-pointer text-xs border ${
+                isLight ? 'bg-teal-50 hover:bg-teal-100 text-teal-800 border-teal-300' : 'bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border-teal-500/30'
+              }`}
+              title="點擊開啟新案件雇主需求登記表單"
+            >
+              <ClipboardList className="w-3.5 h-3.5 text-teal-500" />
+              <span>新案件雇主填單</span>
             </button>
           </div>
         </div>
 
         {/* Primary Tab Navigation - Clean Standard SaaS Tab Styling */}
-        <div className="bg-slate-900 border border-slate-800/90 p-1 rounded-xl flex space-x-1 overflow-x-auto text-xs font-medium shadow-sm relative">
+        <div className={`p-1 rounded-xl flex space-x-1 overflow-x-auto text-xs font-medium border shadow-sm relative transition-colors ${
+          isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800/90'
+        }`}>
           {[
             {
               id: 'health_checks',
@@ -286,19 +339,23 @@ export default function App() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`relative flex-1 min-w-[140px] py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer z-10 ${
-                  isActive ? 'text-teal-300 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                  isActive
+                    ? isLight ? 'text-teal-700 font-bold' : 'text-teal-300 font-bold'
+                    : isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                 }`}
               >
                 {isActive && (
                   <>
                     <motion.div
                       layoutId="activeTabBg"
-                      className="absolute inset-0 bg-slate-800 rounded-lg border border-slate-700/80 z-[-1]"
+                      className={`absolute inset-0 rounded-lg border z-[-1] ${
+                        isLight ? 'bg-slate-100 border-slate-300' : 'bg-slate-800 border-slate-700/80'
+                      }`}
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
                     <motion.div
                       layoutId="activeTabIndicatorLine"
-                      className="absolute bottom-0 left-3 right-3 h-0.5 bg-teal-400 rounded-full z-10"
+                      className="absolute bottom-0 left-3 right-3 h-0.5 bg-teal-500 rounded-full z-10"
                       transition={{ type: 'spring', stiffness: 500, damping: 35 }}
                     />
                   </>
@@ -308,8 +365,8 @@ export default function App() {
                   <span
                     className={`relative z-10 text-[10px] px-1.5 py-0.2 rounded border ${
                       isActive
-                        ? 'bg-slate-900 text-teal-300 border-teal-500/40'
-                        : 'bg-slate-800/80 text-slate-400 border-slate-700/60'
+                        ? isLight ? 'bg-white text-teal-800 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
+                        : isLight ? 'bg-slate-100 text-slate-600 border-slate-300' : 'bg-slate-800/80 text-slate-400 border-slate-700/60'
                     }`}
                   >
                     {tab.badge}
@@ -381,6 +438,12 @@ export default function App() {
           setCaregivers((prev) => [...prev, newCg]);
           setActiveCaregiverId(newCg.id);
         }}
+      />
+
+      {/* New Case Employer Google Form Modal */}
+      <NewCaseGoogleFormModal
+        isOpen={isNewCaseFormOpen}
+        onClose={() => setIsNewCaseFormOpen(false)}
       />
 
       {/* Footer */}

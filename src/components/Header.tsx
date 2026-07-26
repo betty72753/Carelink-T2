@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ForeignCaregiver, NotificationItem } from '../types';
-import { Bell, Plus, ShieldCheck, HeartPulse, User, CheckCircle2, Volume2, AlertTriangle } from 'lucide-react';
+import { Bell, Plus, ShieldCheck, HeartPulse, User, CheckCircle2, Volume2, AlertTriangle, ClipboardList, Sun, Moon } from 'lucide-react';
 import { requestNotificationPermission, sendWebPushNotification } from '../utils/pushNotification';
 import { TypewriterButton } from './TypewriterButton';
 import { MouseInteractiveNotification } from './MouseInteractiveNotification';
@@ -12,10 +12,13 @@ interface HeaderProps {
   notifications: NotificationItem[];
   onOpenNotifications: () => void;
   onOpenNewCaregiverModal: () => void;
+  onOpenNewCaseFormModal: () => void;
   onOpenProfileModal: () => void;
   pushEnabled: boolean;
   setPushEnabled: (enabled: boolean) => void;
   onSelectTab?: (tab: string) => void;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,10 +28,13 @@ export const Header: React.FC<HeaderProps> = ({
   notifications,
   onOpenNotifications,
   onOpenNewCaregiverModal,
+  onOpenNewCaseFormModal,
   onOpenProfileModal,
   pushEnabled,
   setPushEnabled,
   onSelectTab,
+  theme = 'dark',
+  onToggleTheme,
 }) => {
   const [showPushToast, setShowPushToast] = useState(false);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -52,9 +58,14 @@ export const Header: React.FC<HeaderProps> = ({
 
   // Find urgent health check if any
   const pendingHc = activeCaregiver.healthChecks.find((h) => h.status === 'pending');
+  const isLight = theme === 'light';
 
   return (
-    <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-lg">
+    <header className={`sticky top-0 z-30 transition-colors duration-300 border-b ${
+      isLight
+        ? 'bg-white text-slate-800 border-slate-200/80 shadow-sm'
+        : 'bg-slate-900 text-white border-slate-800 shadow-lg'
+    }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           
@@ -66,41 +77,60 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
               <div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-bold text-lg text-slate-100 tracking-tight">外籍看護雇主管理平台</span>
-                  <span className="bg-slate-800 text-slate-400 text-[11px] px-2 py-0.5 rounded-md border border-slate-700 font-normal flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-teal-400" /> 合規核備
+                  <span className={`font-bold text-lg tracking-tight ${isLight ? 'text-slate-900' : 'text-slate-100'}`}>
+                    外籍看護雇主管理平台
+                  </span>
+                  <span className={`text-[11px] px-2 py-0.5 rounded-md border font-normal flex items-center gap-1 ${
+                    isLight ? 'bg-teal-50 text-teal-800 border-teal-200' : 'bg-slate-800 text-slate-400 border-slate-700'
+                  }`}>
+                    <ShieldCheck className="w-3 h-3 text-teal-500" /> 合規核備
                   </span>
                 </div>
-                <p className="text-xs text-slate-400">健檢定期通知 ‧ 合約流程追蹤 ‧ 線上電子簽章</p>
+                <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  健檢定期通知 ‧ 合約流程追蹤 ‧ 線上電子簽章
+                </p>
               </div>
             </div>
 
-            {/* Mobile notification bell button with mouse interactive effect */}
+            {/* Mobile Actions: Theme toggle & notification bell */}
             <div className="flex md:hidden items-center space-x-2">
-              <MouseInteractiveNotification
+              {onToggleTheme && (
+                <button
+                  onClick={onToggleTheme}
+                  className={`p-2 rounded-xl border text-xs font-medium transition cursor-pointer ${
+                    isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' : 'bg-slate-800 text-slate-300 border-slate-700'
+                  }`}
+                  title={isLight ? '切換為深色模式' : '切換為淺色模式'}
+                >
+                  {isLight ? <Moon className="w-4 h-4 text-indigo-500" /> : <Sun className="w-4 h-4 text-amber-400" />}
+                </button>
+              )}
+
+              <button
                 onClick={onOpenNotifications}
-                className="p-1.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700"
+                className={`p-2 rounded-xl border transition cursor-pointer relative ${
+                  isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200' : 'bg-slate-800 text-slate-300 border-slate-700'
+                }`}
                 title="即時推播通知中心"
-                glowColor="rgba(244, 63, 94, 0.4)"
               >
-                <div className="relative p-1">
-                  <Bell className="w-5 h-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
-                      {unreadCount}
-                    </span>
-                  )}
-                </div>
-              </MouseInteractiveNotification>
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center animate-pulse">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
             </div>
           </div>
 
-          {/* Center: Caregiver Selector & Red Bold Typewriter Health Check Warning Button */}
+          {/* Center: Caregiver Selector */}
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             {/* Caregiver Switcher Dropdown */}
-            <div className="relative flex items-center bg-slate-800/90 border border-slate-700/80 rounded-xl p-1.5 shadow-inner">
-              <span className="text-xs font-medium text-slate-400 px-2 flex items-center gap-1">
-                <User className="w-3.5 h-3.5 text-teal-400" /> 看護工:
+            <div className={`relative flex items-center border rounded-xl p-1.5 transition-colors ${
+              isLight ? 'bg-slate-100/90 border-slate-200' : 'bg-slate-800/90 border-slate-700/80 shadow-inner'
+            }`}>
+              <span className={`text-xs font-medium px-2 flex items-center gap-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                <User className="w-3.5 h-3.5 text-teal-500" /> 看護工:
               </span>
               <select
                 value={activeCaregiver.id}
@@ -108,7 +138,9 @@ export const Header: React.FC<HeaderProps> = ({
                   const found = caregivers.find((c) => c.id === e.target.value);
                   if (found) onSelectCaregiver(found);
                 }}
-                className="bg-slate-900 text-slate-100 font-semibold text-sm rounded-lg px-2.5 py-1 pr-6 focus:outline-none focus:ring-1 focus:ring-teal-400 border border-slate-700 cursor-pointer"
+                className={`font-semibold text-sm rounded-lg px-2.5 py-1 pr-6 focus:outline-none focus:ring-1 focus:ring-teal-400 border cursor-pointer ${
+                  isLight ? 'bg-white text-slate-800 border-slate-300' : 'bg-slate-900 text-slate-100 border-slate-700'
+                }`}
               >
                 {caregivers.map((cg) => (
                   <option key={cg.id} value={cg.id}>
@@ -119,29 +151,70 @@ export const Header: React.FC<HeaderProps> = ({
 
               <button
                 onClick={onOpenNewCaregiverModal}
-                className="ml-2 text-xs bg-slate-700 hover:bg-slate-600 text-slate-200 px-2 py-1 rounded-lg flex items-center gap-1 transition"
-                title="登記新看護工"
+                className={`ml-1.5 text-xs px-2 py-1 rounded-lg flex items-center gap-1 transition ${
+                  isLight ? 'bg-slate-200 hover:bg-slate-300 text-slate-800' : 'bg-slate-700 hover:bg-slate-600 text-slate-200'
+                }`}
+                title="快速新增看護工名單"
               >
                 <Plus className="w-3.5 h-3.5" /> 新增
               </button>
             </div>
 
+            {/* New Case Employer Form Button */}
+            <button
+              onClick={onOpenNewCaseFormModal}
+              className="bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-extrabold text-xs px-3 py-2 rounded-xl flex items-center gap-1.5 transition cursor-pointer shadow-md shadow-teal-500/20 active:scale-95"
+              title="點擊開啟新案件雇主需求登記 Google 表單"
+            >
+              <ClipboardList className="w-4 h-4 text-slate-950 stroke-[2.5]" />
+              <span>新案件雇主填單</span>
+            </button>
+
             {/* Subtle Alert Tag for Health Check Warning */}
             {pendingHc && (
               <button
                 onClick={() => onSelectTab && onSelectTab('health_checks')}
-                className="hidden lg:flex items-center gap-2 bg-slate-800/90 hover:bg-slate-800 text-slate-200 border-l-2 border-red-500 border-y border-r border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
+                className={`hidden lg:flex items-center gap-2 border-l-2 border-red-500 border-y border-r px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm ${
+                  isLight ? 'bg-rose-50 text-slate-800 border-rose-200' : 'bg-slate-800/90 text-slate-200 border-slate-700/80'
+                }`}
                 title="點擊查看健康檢查處置"
               >
-                <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                <span className="text-red-400 font-bold">健檢提醒:</span>
-                <span className="text-slate-200 truncate max-w-[200px]">{pendingHc.stageName} (21天內到期)</span>
+                <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
+                <span className="text-red-500 font-bold">健檢提醒:</span>
+                <span className={`truncate max-w-[200px] ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
+                  {pendingHc.stageName} (21天內到期)
+                </span>
               </button>
             )}
           </div>
 
           {/* Right Actions: Standardized Navbar Area */}
           <div className="hidden md:flex items-center space-x-2.5">
+            {/* Theme Switcher Toggle Button */}
+            {onToggleTheme && (
+              <button
+                onClick={onToggleTheme}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium border transition cursor-pointer shadow-sm ${
+                  isLight
+                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                    : 'bg-slate-800/80 hover:bg-slate-800 text-slate-200 border-slate-700/80'
+                }`}
+                title={isLight ? '切換為深色模式' : '切換為淺色模式'}
+              >
+                {isLight ? (
+                  <>
+                    <Moon className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>深色模式</span>
+                  </>
+                ) : (
+                  <>
+                    <Sun className="w-3.5 h-3.5 text-amber-400" />
+                    <span>淺色模式</span>
+                  </>
+                )}
+              </button>
+            )}
+
             {/* Push Notification Toggle */}
             <button
               onClick={handleTogglePush}
