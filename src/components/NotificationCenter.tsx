@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NotificationItem, NotificationCategory } from '../types';
 import { Bell, Check, Trash2, X, Send, HeartPulse, FileText, Clock, DollarSign, ExternalLink, Volume2 } from 'lucide-react';
 import { sendWebPushNotification } from '../utils/pushNotification';
+import { MouseInteractiveNotification } from './MouseInteractiveNotification';
 
 interface NotificationCenterProps {
   isOpen: boolean;
@@ -90,12 +91,14 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
               <Volume2 className="w-4 h-4 text-teal-600" />
               <span>網頁推播功能：{pushEnabled ? '已啟用 🟢' : '關閉中 ⚪'}</span>
             </div>
-            <button
+            <MouseInteractiveNotification
               onClick={handleTestPushNotification}
               className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition"
+              title="滑鼠互動：點擊測試即時推播"
+              glowColor="rgba(20, 184, 166, 0.45)"
             >
               <Send className="w-3 h-3" /> 測試發送推播
-            </button>
+            </MouseInteractiveNotification>
           </div>
 
           {testSuccessMessage && (
@@ -150,14 +153,15 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
             </div>
           ) : (
             filtered.map((item) => (
-              <div
+              <MouseInteractiveNotification
                 key={item.id}
                 onClick={() => onMarkAsRead(item.id)}
-                className={`p-3.5 rounded-xl border transition relative group cursor-pointer ${
+                className={`p-3.5 rounded-xl border transition relative group cursor-pointer block text-left ${
                   !item.isRead
                     ? 'bg-teal-50/60 border-teal-200/90 shadow-sm'
                     : 'bg-white border-slate-200/80 hover:border-slate-300'
                 }`}
+                glowColor={!item.isRead ? "rgba(13, 148, 136, 0.25)" : "rgba(99, 102, 241, 0.15)"}
               >
                 {!item.isRead && (
                   <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-rose-500 rounded-full animate-ping"></span>
@@ -205,7 +209,7 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-              </div>
+              </MouseInteractiveNotification>
             ))
           )}
         </div>

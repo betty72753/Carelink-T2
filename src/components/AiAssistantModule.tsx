@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ForeignCaregiver } from '../types';
-import { Bot, Send, Languages, BookOpen, Sparkles, Copy, Check, MessageSquare, ShieldCheck, HeartPulse } from 'lucide-react';
+import { Bot, Send, Languages, BookOpen, Sparkles, Copy, Check, MessageSquare, ShieldCheck, HeartPulse, ArrowRight } from 'lucide-react';
 
 interface AiAssistantModuleProps {
   caregiver: ForeignCaregiver;
@@ -44,7 +44,7 @@ export const AiAssistantModule: React.FC<AiAssistantModuleProps> = ({ caregiver 
 
   // Quick Preset Care Commands
   const presets = [
-    { label: '💊 飯後服藥與記錄', text: `請阿嬤（被照顧者）在吃完飯半小時後吃這包黃色藥包，吃完藥請幫她量體溫與血壓並上記錄簿。` },
+    { label: '💊 飯後服藥與記錄', text: `請阿嬤（被照顧者）在吃完飯半小時後吃這包黃色藥包，吃完藥請幫她量體體溫與血壓並上記錄簿。` },
     { label: '🩺 安排醫院體檢', text: `我們明天早上 8 點需要去台北市立聯合醫院做定期健康檢查，請帶好護照、居留證和水壺。` },
     { label: '🚶 陪同下午散步', text: `今天下午 4 點天氣很好，請幫阿嬤穿上薄外套，推輪椅帶她到附近公園散步 30 分鐘。` },
     { label: '🛌 協助翻身與伸展', text: `每 2 個小時請協助阿嬤翻身拍背，並幫她的手腳做 10 分鐘溫和伸展運動。` }
@@ -113,6 +113,20 @@ export const AiAssistantModule: React.FC<AiAssistantModuleProps> = ({ caregiver 
     }
   };
 
+  const handleTypewriterClick = (selectedText: string) => {
+    if (selectedText.includes('翻譯') || selectedText.includes('服降血壓藥') || selectedText.includes('照護') || selectedText.includes('散步')) {
+      setActiveTab('translation');
+      const cleanText = selectedText.replace(/^[🤖💬💡✨]\s*(多國語言助手|雙語溝通卡|AI智囊|AI 智囊)：/g, '').trim();
+      setInstructionInput(cleanText);
+      handleTranslateInstruction(cleanText);
+    } else {
+      setActiveTab('legal_qa');
+      const cleanText = selectedText.replace(/^[🤖💬💡✨]\s*(雇主智囊|AI智囊|AI 智囊)：/g, '').trim();
+      setQaPrompt(cleanText);
+      handleAskLegalQa(cleanText);
+    }
+  };
+
   const handleCopyResult = () => {
     if (!translatedResult) return;
     const textToCopy = `【雇主照護指示 - ${translatedResult.targetLanguageName}】\n${translatedResult.translatedText}\n\n(中文：${translatedResult.chineseSummary})`;
@@ -124,8 +138,8 @@ export const AiAssistantModule: React.FC<AiAssistantModuleProps> = ({ caregiver 
   return (
     <div className="space-y-6">
       
-      {/* Top Banner Header */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl border border-indigo-800/50">
+      {/* Top Banner Header with Dynamic Typewriter Button */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-6 text-white shadow-xl border border-indigo-800/50 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 bg-indigo-500/20 text-indigo-300 text-xs font-semibold px-3 py-1 rounded-full border border-indigo-500/30">
@@ -161,6 +175,86 @@ export const AiAssistantModule: React.FC<AiAssistantModuleProps> = ({ caregiver 
             >
               <BookOpen className="w-4 h-4" /> 法規與健檢諮詢
             </button>
+          </div>
+        </div>
+
+        {/* Slide-in Hover Action Buttons for AI Assistant & Multilingual Translation */}
+        <div className="pt-3 border-t border-indigo-900/60 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-indigo-300 font-semibold flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" /> 滑入浮現快捷諮詢與雙語翻譯：
+            </span>
+            <span className="text-[11px] text-indigo-400/80 hidden sm:inline">滑鼠移入浮現效果 ‧ 點擊帶入 AI 諮詢</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {[
+              {
+                type: 'legal',
+                badge: '雇主智囊',
+                icon: <Bot className="w-3.5 h-3.5 text-indigo-300" />,
+                title: '體檢逾期處分？',
+                prompt: '滿 18 個月定期體檢逾期會有何法律處分與罰鍰？'
+              },
+              {
+                type: 'trans',
+                badge: '語言助手',
+                icon: <Languages className="w-3.5 h-3.5 text-teal-300" />,
+                title: '服藥測量血壓卡',
+                prompt: '請阿嬤下午 2 點服降血壓藥，並記錄血壓於護理表'
+              },
+              {
+                type: 'legal',
+                badge: '雇主智囊',
+                icon: <BookOpen className="w-3.5 h-3.5 text-amber-300" />,
+                title: '加班費計算標準',
+                prompt: '家庭看護工例假日加班費與休假標準如何計算？'
+              },
+              {
+                type: 'trans',
+                badge: '語言助手',
+                icon: <Sparkles className="w-3.5 h-3.5 text-rose-300" />,
+                title: '醫院體檢通知卡',
+                prompt: '明天早上 8 點需要去台北市立聯合醫院做定期體檢'
+              }
+            ].map((item, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  if (item.type === 'legal') {
+                    setActiveTab('legal_qa');
+                    setQaPrompt(item.prompt);
+                    handleAskLegalQa(item.prompt);
+                  } else {
+                    setActiveTab('translation');
+                    setInstructionInput(item.prompt);
+                    handleTranslateInstruction(item.prompt);
+                  }
+                }}
+                className="group relative bg-indigo-950/70 hover:bg-indigo-900 border border-indigo-700/50 hover:border-indigo-400/80 rounded-xl p-2.5 text-left transition-all duration-300 ease-out transform hover:-translate-y-1 hover:shadow-lg hover:shadow-indigo-500/20 cursor-pointer flex items-center justify-between gap-2 overflow-hidden"
+              >
+                {/* Slide-in shine backdrop highlight */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none transform -translate-x-full group-hover:translate-x-full duration-1000 ease-in-out" />
+
+                <div className="space-y-0.5 min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-800/80 text-indigo-200 border border-indigo-600/40">
+                      {item.badge}
+                    </span>
+                    <span className="text-xs font-bold text-white truncate group-hover:text-indigo-200 transition-colors">
+                      {item.title}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-indigo-300/80 truncate">
+                    {item.prompt}
+                  </p>
+                </div>
+
+                <div className="p-1.5 rounded-lg bg-indigo-800/50 text-indigo-300 group-hover:bg-indigo-600 group-hover:text-white transition-all transform group-hover:translate-x-0.5 flex-shrink-0">
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>

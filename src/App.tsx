@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'motion/react';
 import { ForeignCaregiver, NotificationItem, NotificationCategory } from './types';
 import { INITIAL_CAREGIVERS, INITIAL_NOTIFICATIONS } from './data/mockData';
 import { Header } from './components/Header';
@@ -220,13 +221,15 @@ export default function App() {
             </div>
           </div>
 
-          {/* Alert Pills */}
+          {/* Alert Pills with Breathing Effect */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {pendingHealthChecksCount > 0 && (
               <button
                 onClick={() => setActiveTab('health_checks')}
-                className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5 transition"
+                className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5 transition animate-breathing cursor-pointer shadow-sm"
+                title="點擊切換至定期健檢頁面"
               >
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-breathing" />
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                 <span>待辦體檢：{pendingHealthChecksCount} 項</span>
               </button>
@@ -235,8 +238,10 @@ export default function App() {
             {pendingDocsCount > 0 && (
               <button
                 onClick={() => setActiveTab('documents')}
-                className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5 transition animate-pulse"
+                className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5 transition animate-breathing cursor-pointer shadow-sm"
+                title="點擊切換至線上簽章頁面"
               >
+                <span className="w-2 h-2 rounded-full bg-rose-400 animate-breathing" />
                 <FileSignature className="w-3.5 h-3.5 text-rose-400" />
                 <span>待簽署文件：{pendingDocsCount} 份</span>
               </button>
@@ -244,15 +249,15 @@ export default function App() {
 
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-xl font-medium transition"
+              className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-xl font-medium transition cursor-pointer"
             >
               檢視完整個案檔案
             </button>
           </div>
         </div>
 
-        {/* Primary Tab Navigation */}
-        <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-2xl flex space-x-1 overflow-x-auto text-xs font-bold shadow-sm">
+        {/* Primary Tab Navigation with Framer Motion Sliding Indicator */}
+        <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-2xl flex space-x-1 overflow-x-auto text-xs font-bold shadow-sm relative">
           {[
             {
               id: 'health_checks',
@@ -278,24 +283,36 @@ export default function App() {
               badge: 'Gemini AI',
               badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
             }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 min-w-[150px] py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-extrabold shadow-md'
-                  : 'text-slate-300 hover:text-white hover:bg-slate-800'
-              }`}
-            >
-              <span>{tab.label}</span>
-              {tab.badge && (
-                <span className={`text-[10px] px-2 py-0.5 rounded-full border ${tab.badgeColor}`}>
-                  {tab.badge}
-                </span>
-              )}
-            </button>
-          ))}
+          ].map((tab) => {
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`relative flex-1 min-w-[150px] py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition cursor-pointer z-10 ${
+                  isActive ? 'text-slate-950 font-extrabold' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                }`}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabSlidingIndicator"
+                    className="absolute inset-0 bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-500 rounded-xl shadow-md z-[-1]"
+                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+                  />
+                )}
+                <span className="relative z-10">{tab.label}</span>
+                {tab.badge && (
+                  <span
+                    className={`relative z-10 text-[10px] px-2 py-0.5 rounded-full border ${
+                      isActive ? 'bg-slate-900/80 text-teal-300 border-teal-400/50' : tab.badgeColor
+                    }`}
+                  >
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab Content Display */}

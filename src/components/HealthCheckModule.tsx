@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ForeignCaregiver, HealthCheckRecord } from '../types';
 import { TAIWAN_HEALTH_CHECK_HOSPITALS } from '../data/mockData';
 import { HeartPulse, CheckCircle2, Clock, AlertTriangle, Calendar, Building2, MapPin, Phone, Upload, Download, Send, FileCheck2 } from 'lucide-react';
 import { sendWebPushNotification } from '../utils/pushNotification';
+import { TypewriterButton } from './TypewriterButton';
+import { MouseInteractiveNotification } from './MouseInteractiveNotification';
 
 interface HealthCheckModuleProps {
   caregiver: ForeignCaregiver;
@@ -19,8 +21,30 @@ export const HealthCheckModule: React.FC<HealthCheckModuleProps> = ({
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [customNote, setCustomNote] = useState('');
 
-  const getStatusBadge = (status: HealthCheckRecord['status']) => {
-    switch (status) {
+  // Count-up animation state for 21 days countdown & progress ring
+  const [daysCount, setDaysCount] = useState(0);
+  const [ringProgress, setRingProgress] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const end = 21;
+    const duration = 1000;
+    const intervalTime = Math.floor(duration / end);
+
+    const timer = setInterval(() => {
+      start += 1;
+      setDaysCount(start);
+      setRingProgress((start / end) * 70); // 70% ring gauge
+      if (start >= end) {
+        clearInterval(timer);
+      }
+    }, intervalTime);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const getStatusBadge = (check: HealthCheckRecord) => {
+    switch (check.status) {
       case 'completed':
         return (
           <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-300">
@@ -29,15 +53,30 @@ export const HealthCheckModule: React.FC<HealthCheckModuleProps> = ({
         );
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-900 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-300 animate-pulse">
-            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> 待辦理（期限倒數）
-          </span>
+          <TypewriterButton
+            isRedBoldAlert={true}
+            badgeText="健檢警示"
+            icon={<AlertTriangle className="w-3.5 h-3.5 text-red-600 animate-pulse" />}
+            sequences={[
+              `⚠️ 健檢警示：${check.stageName} (倒數期限中！)`,
+              `⚠️ 健檢警示：未依法辦理體檢最高罰鍰 30 萬元！`,
+              `⚠️ 健檢警示：點擊立即預約衛福部特約醫院`
+            ]}
+            onClick={() => setShowAppointmentModal(check)}
+          />
         );
       case 'overdue':
         return (
-          <span className="inline-flex items-center gap-1 bg-rose-100 text-rose-800 text-xs font-bold px-2.5 py-1 rounded-full border border-rose-300">
-            <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> ⚠️ 已逾期（需速處置）
-          </span>
+          <TypewriterButton
+            isRedBoldAlert={true}
+            badgeText="健檢警示"
+            icon={<AlertTriangle className="w-3.5 h-3.5 text-red-600 animate-bounce" />}
+            sequences={[
+              `⚠️ 健檢警示：${check.stageName} 已逾期！請速處理`,
+              `⚠️ 健檢警示：勞動部得廢止聘僱許可，請立即補辦！`
+            ]}
+            onClick={() => setShowAppointmentModal(check)}
+          />
         );
       case 'upcoming':
         return (
@@ -71,11 +110,13 @@ export const HealthCheckModule: React.FC<HealthCheckModuleProps> = ({
     }
   };
 
+  const urgentHc = caregiver.healthChecks.find((h) => h.status === 'pending' || h.status === 'overdue');
+
   return (
     <div className="space-y-6">
       
-      {/* Top Banner Overview */}
-      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden border border-teal-800/50">
+      {/* Top Banner Overview with Red Bold Typewriter Alert Button */}
+      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden border border-teal-800/50 space-y-4">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 bg-teal-500/20 text-teal-300 text-xs font-semibold px-3 py-1 rounded-full border border-teal-500/30">
@@ -89,30 +130,83 @@ export const HealthCheckModule: React.FC<HealthCheckModuleProps> = ({
             </p>
           </div>
 
-          <div className="bg-slate-800/90 border border-slate-700 p-4 rounded-xl flex items-center space-x-4 min-w-[240px] shadow-inner">
-            <div className="w-12 h-12 rounded-full bg-teal-500/20 text-teal-300 flex items-center justify-center font-bold text-lg border border-teal-500/30">
-              18M
+          <div className="bg-slate-800/90 border border-slate-700 p-4 rounded-xl flex items-center space-x-4 min-w-[260px] shadow-inner relative overflow-hidden group">
+            {/* SVG Circular Ring Gauge with animated stroke offset */}
+            <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
+              <svg className="w-14 h-14 transform -rotate-90">
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  className="text-slate-700 stroke-current"
+                  strokeWidth="4"
+                  fill="transparent"
+                />
+                <circle
+                  cx="28"
+                  cy="28"
+                  r="22"
+                  className="text-teal-400 stroke-current transition-all duration-1000 ease-out"
+                  strokeWidth="4"
+                  strokeDasharray={138.2}
+                  strokeDashoffset={138.2 - (138.2 * (ringProgress / 100))}
+                  strokeLinecap="round"
+                  fill="transparent"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center font-extrabold text-teal-300 text-sm">
+                18M
+              </div>
             </div>
+
             <div>
               <div className="text-xs text-slate-400">當前急需處置體檢</div>
               <div className="text-sm font-bold text-amber-300">入境滿 18 個月定期健檢</div>
-              <div className="text-xs text-teal-400 font-medium">截止日：2026/08/15 (倒數 21 天)</div>
+              <div className="text-xs text-teal-300 font-bold flex items-center gap-1.5 mt-0.5">
+                <span>截止日：2026/08/15</span>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/40 animate-breathing">
+                  倒數 {daysCount} 天
+                </span>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Dynamic Red Bold Typewriter Alert Button for Health Check Warning */}
+        {urgentHc && (
+          <div className="pt-3 border-t border-teal-800/60 flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs font-bold text-red-400 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-red-500 animate-bounce" /> 衛福部/勞動部合規告警：
+            </span>
+
+            <TypewriterButton
+              isRedBoldAlert={true}
+              badgeText="健檢警示按鈕"
+              icon={<AlertTriangle className="w-4 h-4 text-red-600 animate-pulse" />}
+              sequences={[
+                `⚠️ 健檢警示：【${caregiver.name}】${urgentHc.stageName} 倒數辦理中！`,
+                `⚠️ 健檢警示：雇主未依限辦理外籍看護健檢，最高可處罰鍰 30 萬元！`,
+                `⚠️ 健檢警示：逾期未補辦經通知，勞動部得廢止雇主聘僱許可！`,
+                `⚠️ 健檢警示：點擊立即預約衛福部指定雙北特約醫院`
+              ]}
+              onClick={() => setShowAppointmentModal(urgentHc)}
+              className="w-full sm:w-auto"
+            />
+          </div>
+        )}
       </div>
 
-      {/* Health Check Timeline Schedule Cards */}
+      {/* Health Check Timeline Schedule Cards with Elevate on Hover */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {caregiver.healthChecks.map((check) => (
           <div
             key={check.id}
-            className={`rounded-2xl border p-5 transition shadow-sm ${
+            className={`group rounded-2xl border p-5 transition-all duration-300 transform hover:-translate-y-1.5 hover:shadow-xl ${
               check.status === 'pending'
-                ? 'bg-amber-50/50 border-amber-300 ring-2 ring-amber-400/20 shadow-md'
+                ? 'bg-amber-50/50 border-amber-300 ring-2 ring-amber-400/20 shadow-md hover:border-amber-400'
                 : check.status === 'completed'
-                ? 'bg-white border-emerald-200/90 hover:border-emerald-300'
-                : 'bg-white border-slate-200 opacity-90'
+                ? 'bg-white border-emerald-200/90 hover:border-emerald-400 shadow-sm'
+                : 'bg-white border-slate-200 opacity-90 hover:border-slate-300 shadow-sm'
             }`}
           >
             <div className="flex items-start justify-between">
@@ -121,18 +215,23 @@ export const HealthCheckModule: React.FC<HealthCheckModuleProps> = ({
                   <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                     第 {check.monthInterval === 0 ? '0 (入境3天)' : `${check.monthInterval} 個月`}
                   </span>
-                  {getStatusBadge(check.status)}
+                  {getStatusBadge(check)}
                 </div>
                 <h3 className="text-base font-bold text-slate-900 mt-2">{check.stageName}</h3>
               </div>
 
-              <button
+              {/* Push Notification Button with Mouse Interactive & Airplane 45-degree slide animation */}
+              <MouseInteractiveNotification
                 onClick={() => handleSendReminderPush(check)}
-                className="p-2 text-slate-400 hover:text-teal-600 hover:bg-slate-100 rounded-lg transition"
-                title="發送測試推播通知至手機"
+                className="p-1.5 rounded-xl bg-slate-100 hover:bg-teal-50 text-slate-500 hover:text-teal-700 border border-slate-200 group/btn transition-all"
+                title="滑鼠互動：發送測試推播通知至手機與電腦"
+                glowColor="rgba(20, 184, 166, 0.4)"
               >
-                <Send className="w-4 h-4" />
-              </button>
+                <div className="p-1 flex items-center gap-1 text-xs font-semibold">
+                  <Send className="w-3.5 h-3.5 text-teal-600 transition-transform duration-300 ease-out group-hover/btn:translate-x-1 group-hover/btn:-translate-y-1" />
+                  <span className="hidden sm:inline">推播</span>
+                </div>
+              </MouseInteractiveNotification>
             </div>
 
             <div className="mt-4 space-y-2 text-xs text-slate-600">

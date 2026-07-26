@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { ForeignCaregiver, NotificationItem } from '../types';
-import { Bell, Plus, ShieldCheck, HeartPulse, User, CheckCircle2, Volume2 } from 'lucide-react';
+import { Bell, Plus, ShieldCheck, HeartPulse, User, CheckCircle2, Volume2, AlertTriangle } from 'lucide-react';
 import { requestNotificationPermission, sendWebPushNotification } from '../utils/pushNotification';
+import { TypewriterButton } from './TypewriterButton';
+import { MouseInteractiveNotification } from './MouseInteractiveNotification';
 
 interface HeaderProps {
   caregivers: ForeignCaregiver[];
@@ -13,6 +15,7 @@ interface HeaderProps {
   onOpenProfileModal: () => void;
   pushEnabled: boolean;
   setPushEnabled: (enabled: boolean) => void;
+  onSelectTab?: (tab: string) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -25,6 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenProfileModal,
   pushEnabled,
   setPushEnabled,
+  onSelectTab,
 }) => {
   const [showPushToast, setShowPushToast] = useState(false);
   const unreadCount = notifications.filter((n) => !n.isRead).length;
@@ -71,24 +75,27 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            {/* Mobile notification bell button */}
+            {/* Mobile notification bell button with mouse interactive effect */}
             <div className="flex md:hidden items-center space-x-2">
-              <button
+              <MouseInteractiveNotification
                 onClick={onOpenNotifications}
-                className="relative p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition"
-                title="通知中心"
+                className="p-1.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700"
+                title="即時推播通知中心"
+                glowColor="rgba(244, 63, 94, 0.4)"
               >
-                <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
+                <div className="relative p-1">
+                  <Bell className="w-5 h-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </div>
+              </MouseInteractiveNotification>
             </div>
           </div>
 
-          {/* Center: Caregiver Selector & Status Ribbon */}
+          {/* Center: Caregiver Selector & Red Bold Typewriter Health Check Warning Button */}
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             {/* Caregiver Switcher Dropdown */}
             <div className="relative flex items-center bg-slate-800/90 border border-slate-700/80 rounded-xl p-1.5 shadow-inner">
@@ -119,45 +126,59 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            {/* Urgent Health Check Warning Tag */}
+            {/* Red Bold Typewriter Dynamic Button for Health Check Warnings */}
             {pendingHc && (
-              <div className="hidden lg:flex items-center space-x-2 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs px-3 py-1.5 rounded-xl animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-                <span className="font-medium">健檢警示：{pendingHc.stageName} (21天內到期)</span>
-              </div>
+              <TypewriterButton
+                isRedBoldAlert={true}
+                badgeText="健檢警示"
+                icon={<AlertTriangle className="w-4 h-4 text-red-600 animate-pulse" />}
+                sequences={[
+                  `⚠️ 健檢警示：${pendingHc.stageName} (倒數21天內到期！)`,
+                  `⚠️ 健檢警示：未依限辦理外籍看護體檢，最高可處 30 萬元罰鍰！`,
+                  `⚠️ 健檢警示：點擊立即預約衛福部特約醫院體檢`
+                ]}
+                onClick={() => onSelectTab && onSelectTab('health_checks')}
+                className="hidden lg:inline-flex"
+              />
             )}
           </div>
 
-          {/* Right Actions: Push Toggle & Notification Bell & Employer Info */}
+          {/* Right Actions: Push Toggle & Notification Bell with Mouse Interactive Effects */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Push Notification Toggle Button */}
-            <button
+            {/* Push Notification Toggle Button with Mouse Interactive Dynamic Effect */}
+            <MouseInteractiveNotification
               onClick={handleTogglePush}
-              className={`flex items-center space-x-2 text-xs font-medium px-3 py-1.5 rounded-xl border transition ${
+              className={`rounded-xl border shadow-sm ${
                 pushEnabled
-                  ? 'bg-teal-500/20 text-teal-300 border-teal-500/40 hover:bg-teal-500/30'
-                  : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 hover:text-white'
+                  ? 'bg-teal-500/20 text-teal-300 border-teal-500/50'
+                  : 'bg-slate-800 text-slate-300 border-slate-700'
               }`}
-              title={pushEnabled ? '推播通知已啟用' : '點擊開啟即時推播通知'}
+              title={pushEnabled ? '推播通知已啟用（點擊切換）' : '點擊開啟即時網頁與手機推播通知'}
+              glowColor={pushEnabled ? 'rgba(20, 184, 166, 0.45)' : 'rgba(99, 102, 241, 0.35)'}
             >
-              <Volume2 className={`w-3.5 h-3.5 ${pushEnabled ? 'text-teal-400 animate-bounce' : 'text-slate-400'}`} />
-              <span>{pushEnabled ? '推播服務已開' : '開啟推播通知'}</span>
-              <span className={`w-2 h-2 rounded-full ${pushEnabled ? 'bg-emerald-400' : 'bg-slate-500'}`}></span>
-            </button>
+              <div className="flex items-center space-x-2 text-xs font-semibold px-3 py-2">
+                <Volume2 className={`w-3.5 h-3.5 ${pushEnabled ? 'text-teal-400 animate-bounce' : 'text-slate-400'}`} />
+                <span>{pushEnabled ? '推播服務已啟用' : '開啟推播通知'}</span>
+                <span className={`w-2.5 h-2.5 rounded-full ${pushEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`}></span>
+              </div>
+            </MouseInteractiveNotification>
 
-            {/* Notification Bell Center */}
-            <button
+            {/* Notification Bell Center with Mouse Interactive Dynamic Effect */}
+            <MouseInteractiveNotification
               onClick={onOpenNotifications}
-              className="relative p-2.5 rounded-xl bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700/80 transition border border-slate-700/80 shadow-sm"
-              title="即時通知中心"
+              className="rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700/90 shadow-sm"
+              title="即時推播通知中心"
+              glowColor="rgba(244, 63, 94, 0.45)"
             >
-              <Bell className="w-5 h-5 text-slate-200" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
+              <div className="relative p-2.5 flex items-center justify-center">
+                <Bell className="w-5 h-5 text-slate-200" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
+                    {unreadCount}
+                  </span>
+                )}
+              </div>
+            </MouseInteractiveNotification>
 
             {/* Employer Profile Pill */}
             <button
