@@ -221,15 +221,15 @@ export default function App() {
             </div>
           </div>
 
-          {/* Alert Pills with Breathing Effect */}
+          {/* Subdued Status Indicators */}
           <div className="flex flex-wrap items-center gap-2 text-xs">
             {pendingHealthChecksCount > 0 && (
               <button
                 onClick={() => setActiveTab('health_checks')}
-                className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5 transition animate-breathing cursor-pointer shadow-sm"
+                className="bg-slate-800 hover:bg-slate-750 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition cursor-pointer"
                 title="點擊切換至定期健檢頁面"
               >
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-breathing" />
+                <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-breathing" />
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
                 <span>待辦體檢：{pendingHealthChecksCount} 項</span>
               </button>
@@ -238,50 +238,46 @@ export default function App() {
             {pendingDocsCount > 0 && (
               <button
                 onClick={() => setActiveTab('documents')}
-                className="bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-xl font-medium flex items-center gap-1.5 transition animate-breathing cursor-pointer shadow-sm"
+                className="bg-slate-800 hover:bg-slate-750 text-rose-300 border border-rose-500/30 px-2.5 py-1 rounded-lg font-medium flex items-center gap-1.5 transition cursor-pointer"
                 title="點擊切換至線上簽章頁面"
               >
-                <span className="w-2 h-2 rounded-full bg-rose-400 animate-breathing" />
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-breathing" />
                 <FileSignature className="w-3.5 h-3.5 text-rose-400" />
-                <span>待簽署文件：{pendingDocsCount} 份</span>
+                <span>待簽文件：{pendingDocsCount} 份</span>
               </button>
             )}
 
             <button
               onClick={() => setIsProfileModalOpen(true)}
-              className="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-xl font-medium transition cursor-pointer"
+              className="bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 border border-slate-700/80 px-2.5 py-1 rounded-lg font-medium transition cursor-pointer text-xs"
             >
-              檢視完整個案檔案
+              個案檔案
             </button>
           </div>
         </div>
 
-        {/* Primary Tab Navigation with Framer Motion Sliding Indicator */}
-        <div className="bg-slate-900 border border-slate-800 p-1.5 rounded-2xl flex space-x-1 overflow-x-auto text-xs font-bold shadow-sm relative">
+        {/* Primary Tab Navigation - Clean Standard SaaS Tab Styling */}
+        <div className="bg-slate-900 border border-slate-800/90 p-1 rounded-xl flex space-x-1 overflow-x-auto text-xs font-medium shadow-sm relative">
           {[
             {
               id: 'health_checks',
               label: '🩺 定期健檢通知提醒',
               badge: pendingHealthChecksCount > 0 ? `${pendingHealthChecksCount}項到期` : null,
-              badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/30'
             },
             {
               id: 'workflow',
               label: '📋 合約申辦流程追蹤',
               badge: '進行中',
-              badgeColor: 'bg-teal-500/20 text-teal-300 border-teal-500/30'
             },
             {
               id: 'documents',
               label: '📝 必要文件線上簽章',
-              badge: pendingDocsCount > 0 ? `${pendingDocsCount}份待簽` : '全部已簽',
-              badgeColor: pendingDocsCount > 0 ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+              badge: pendingDocsCount > 0 ? `${pendingDocsCount}份待簽` : '已簽署',
             },
             {
               id: 'ai_assistant',
               label: '🤖 AI 雇主智囊與翻譯',
-              badge: 'Gemini AI',
-              badgeColor: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+              badge: 'AI 服務',
             }
           ].map((tab) => {
             const isActive = activeTab === tab.id;
@@ -289,22 +285,31 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`relative flex-1 min-w-[150px] py-3 px-4 rounded-xl flex items-center justify-center gap-2 transition cursor-pointer z-10 ${
-                  isActive ? 'text-slate-950 font-extrabold' : 'text-slate-300 hover:text-white hover:bg-slate-800/60'
+                className={`relative flex-1 min-w-[140px] py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer z-10 ${
+                  isActive ? 'text-teal-300 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
                 }`}
               >
                 {isActive && (
-                  <motion.div
-                    layoutId="activeTabSlidingIndicator"
-                    className="absolute inset-0 bg-gradient-to-r from-teal-400 via-emerald-400 to-teal-500 rounded-xl shadow-md z-[-1]"
-                    transition={{ type: 'spring', stiffness: 450, damping: 32 }}
-                  />
+                  <>
+                    <motion.div
+                      layoutId="activeTabBg"
+                      className="absolute inset-0 bg-slate-800 rounded-lg border border-slate-700/80 z-[-1]"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                    <motion.div
+                      layoutId="activeTabIndicatorLine"
+                      className="absolute bottom-0 left-3 right-3 h-0.5 bg-teal-400 rounded-full z-10"
+                      transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                    />
+                  </>
                 )}
                 <span className="relative z-10">{tab.label}</span>
                 {tab.badge && (
                   <span
-                    className={`relative z-10 text-[10px] px-2 py-0.5 rounded-full border ${
-                      isActive ? 'bg-slate-900/80 text-teal-300 border-teal-400/50' : tab.badgeColor
+                    className={`relative z-10 text-[10px] px-1.5 py-0.2 rounded border ${
+                      isActive
+                        ? 'bg-slate-900 text-teal-300 border-teal-500/40'
+                        : 'bg-slate-800/80 text-slate-400 border-slate-700/60'
                     }`}
                   >
                     {tab.badge}

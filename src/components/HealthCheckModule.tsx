@@ -47,36 +47,27 @@ export const HealthCheckModule: React.FC<HealthCheckModuleProps> = ({
     switch (check.status) {
       case 'completed':
         return (
-          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-full border border-emerald-300">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 已完成體檢
+          <span className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-emerald-300">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 已完成
           </span>
         );
       case 'pending':
         return (
-          <TypewriterButton
-            isRedBoldAlert={true}
-            badgeText="健檢警示"
-            icon={<AlertTriangle className="w-3.5 h-3.5 text-red-600 animate-pulse" />}
-            sequences={[
-              `⚠️ 健檢警示：${check.stageName} (倒數期限中！)`,
-              `⚠️ 健檢警示：未依法辦理體檢最高罰鍰 30 萬元！`,
-              `⚠️ 健檢警示：點擊立即預約衛福部特約醫院`
-            ]}
+          <span
             onClick={() => setShowAppointmentModal(check)}
-          />
+            className="inline-flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 text-xs font-bold px-2.5 py-1 rounded-full border border-amber-300 cursor-pointer transition"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> 待處置體檢
+          </span>
         );
       case 'overdue':
         return (
-          <TypewriterButton
-            isRedBoldAlert={true}
-            badgeText="健檢警示"
-            icon={<AlertTriangle className="w-3.5 h-3.5 text-red-600 animate-bounce" />}
-            sequences={[
-              `⚠️ 健檢警示：${check.stageName} 已逾期！請速處理`,
-              `⚠️ 健檢警示：勞動部得廢止聘僱許可，請立即補辦！`
-            ]}
+          <span
             onClick={() => setShowAppointmentModal(check)}
-          />
+            className="inline-flex items-center gap-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 text-xs font-bold px-2.5 py-1 rounded-full border border-rose-300 cursor-pointer transition"
+          >
+            <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> 體檢已逾期
+          </span>
         );
       case 'upcoming':
         return (
@@ -115,85 +106,63 @@ export const HealthCheckModule: React.FC<HealthCheckModuleProps> = ({
   return (
     <div className="space-y-6">
       
-      {/* Top Banner Overview with Red Bold Typewriter Alert Button */}
-      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-xl relative overflow-hidden border border-teal-800/50 space-y-4">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 bg-teal-500/20 text-teal-300 text-xs font-semibold px-3 py-1 rounded-full border border-teal-500/30">
-              <HeartPulse className="w-3.5 h-3.5 text-teal-400" /> 衛福部疾管署與勞動部規定法定義務
+      {/* Top Banner Overview - Primary Focus on 18M Countdown */}
+      <div className="bg-slate-900 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden border border-slate-800">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 bg-slate-800 text-teal-300 text-xs font-medium px-2.5 py-0.5 rounded-md border border-slate-700">
+              <HeartPulse className="w-3.5 h-3.5 text-teal-400" /> 法定健康檢查管理
             </div>
-            <h2 className="text-xl md:text-2xl font-bold tracking-tight">
-              {caregiver.name} ‧ 定期健康檢查時間表
+            <h2 className="text-lg md:text-xl font-bold tracking-tight text-slate-100">
+              {caregiver.name} ‧ 定期健康檢查進度表
             </h2>
-            <p className="text-sm text-slate-300 max-w-2xl leading-relaxed">
-              根據《外國人健康檢查指定醫院應行注意事項》，外籍看護工須於入境 3 日內、滿 6 個月、滿 18 個月及滿 30 個月接受定期健康檢查。本系統提供自動倒數提醒與特約醫院預約。
+            <p className="text-xs text-slate-400 max-w-2xl leading-relaxed">
+              根據疾管署與勞動部規定，移工須於入境 3 日內、滿 6 個月、滿 18 個月及滿 30 個月至特約醫院進行定期健康檢查。
             </p>
           </div>
 
-          <div className="bg-slate-800/90 border border-slate-700 p-4 rounded-xl flex items-center space-x-4 min-w-[260px] shadow-inner relative overflow-hidden group">
-            {/* SVG Circular Ring Gauge with animated stroke offset */}
-            <div className="relative w-14 h-14 flex items-center justify-center flex-shrink-0">
-              <svg className="w-14 h-14 transform -rotate-90">
+          {/* Primary Focus Card: 18M Countdown */}
+          <div className="bg-slate-800/90 border border-slate-700/80 p-3.5 rounded-xl flex items-center space-x-3.5 min-w-[260px] shadow-sm">
+            {/* SVG Circular Ring Gauge */}
+            <div className="relative w-12 h-12 flex items-center justify-center flex-shrink-0">
+              <svg className="w-12 h-12 transform -rotate-90">
                 <circle
-                  cx="28"
-                  cy="28"
-                  r="22"
+                  cx="24"
+                  cy="24"
+                  r="19"
                   className="text-slate-700 stroke-current"
-                  strokeWidth="4"
+                  strokeWidth="3.5"
                   fill="transparent"
                 />
                 <circle
-                  cx="28"
-                  cy="28"
-                  r="22"
+                  cx="24"
+                  cy="24"
+                  r="19"
                   className="text-teal-400 stroke-current transition-all duration-1000 ease-out"
-                  strokeWidth="4"
-                  strokeDasharray={138.2}
-                  strokeDashoffset={138.2 - (138.2 * (ringProgress / 100))}
+                  strokeWidth="3.5"
+                  strokeDasharray={119.3}
+                  strokeDashoffset={119.3 - (119.3 * (ringProgress / 100))}
                   strokeLinecap="round"
                   fill="transparent"
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center font-extrabold text-teal-300 text-sm">
+              <div className="absolute inset-0 flex items-center justify-center font-extrabold text-teal-300 text-xs">
                 18M
               </div>
             </div>
 
             <div>
-              <div className="text-xs text-slate-400">當前急需處置體檢</div>
-              <div className="text-sm font-bold text-amber-300">入境滿 18 個月定期健檢</div>
-              <div className="text-xs text-teal-300 font-bold flex items-center gap-1.5 mt-0.5">
+              <div className="text-[11px] text-slate-400">當前急需處置體檢</div>
+              <div className="text-xs font-bold text-slate-100">入境滿 18 個月定期健檢</div>
+              <div className="text-[11px] text-teal-300 font-medium flex items-center gap-1.5 mt-0.5">
                 <span>截止日：2026/08/15</span>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/40 animate-breathing">
+                <span className="inline-flex items-center px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-300 font-bold border border-amber-500/30">
                   倒數 {daysCount} 天
                 </span>
               </div>
             </div>
           </div>
         </div>
-
-        {/* Dynamic Red Bold Typewriter Alert Button for Health Check Warning */}
-        {urgentHc && (
-          <div className="pt-3 border-t border-teal-800/60 flex flex-wrap items-center justify-between gap-3">
-            <span className="text-xs font-bold text-red-400 flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-red-500 animate-bounce" /> 衛福部/勞動部合規告警：
-            </span>
-
-            <TypewriterButton
-              isRedBoldAlert={true}
-              badgeText="健檢警示按鈕"
-              icon={<AlertTriangle className="w-4 h-4 text-red-600 animate-pulse" />}
-              sequences={[
-                `⚠️ 健檢警示：【${caregiver.name}】${urgentHc.stageName} 倒數辦理中！`,
-                `⚠️ 健檢警示：雇主未依限辦理外籍看護健檢，最高可處罰鍰 30 萬元！`,
-                `⚠️ 健檢警示：逾期未補辦經通知，勞動部得廢止雇主聘僱許可！`,
-                `⚠️ 健檢警示：點擊立即預約衛福部指定雙北特約醫院`
-              ]}
-              onClick={() => setShowAppointmentModal(urgentHc)}
-              className="w-full sm:w-auto"
-            />
-          </div>
-        )}
       </div>
 
       {/* Health Check Timeline Schedule Cards with Elevate on Hover */}

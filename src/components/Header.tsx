@@ -67,8 +67,8 @@ export const Header: React.FC<HeaderProps> = ({
               <div>
                 <div className="flex items-center space-x-2">
                   <span className="font-bold text-lg text-slate-100 tracking-tight">外籍看護雇主管理平台</span>
-                  <span className="bg-emerald-500/20 text-emerald-300 text-xs px-2 py-0.5 rounded-full font-medium border border-emerald-500/30 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3" /> 勞工局/衛福部規範
+                  <span className="bg-slate-800 text-slate-400 text-[11px] px-2 py-0.5 rounded-md border border-slate-700 font-normal flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-teal-400" /> 合規核備
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">健檢定期通知 ‧ 合約流程追蹤 ‧ 線上電子簽章</p>
@@ -126,74 +126,60 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
             </div>
 
-            {/* Red Bold Typewriter Dynamic Button for Health Check Warnings */}
+            {/* Subtle Alert Tag for Health Check Warning */}
             {pendingHc && (
-              <TypewriterButton
-                isRedBoldAlert={true}
-                badgeText="健檢警示"
-                icon={<AlertTriangle className="w-4 h-4 text-red-600 animate-pulse" />}
-                sequences={[
-                  `⚠️ 健檢警示：${pendingHc.stageName} (倒數21天內到期！)`,
-                  `⚠️ 健檢警示：未依限辦理外籍看護體檢，最高可處 30 萬元罰鍰！`,
-                  `⚠️ 健檢警示：點擊立即預約衛福部特約醫院體檢`
-                ]}
+              <button
                 onClick={() => onSelectTab && onSelectTab('health_checks')}
-                className="hidden lg:inline-flex"
-              />
+                className="hidden lg:flex items-center gap-2 bg-slate-800/90 hover:bg-slate-800 text-slate-200 border-l-2 border-red-500 border-y border-r border-slate-700/80 px-3 py-1.5 rounded-xl text-xs font-medium transition cursor-pointer shadow-sm"
+                title="點擊查看健康檢查處置"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
+                <span className="text-red-400 font-bold">健檢提醒:</span>
+                <span className="text-slate-200 truncate max-w-[200px]">{pendingHc.stageName} (21天內到期)</span>
+              </button>
             )}
           </div>
 
-          {/* Right Actions: Push Toggle & Notification Bell with Mouse Interactive Effects */}
-          <div className="hidden md:flex items-center space-x-3">
-            {/* Push Notification Toggle Button with Mouse Interactive Dynamic Effect */}
-            <MouseInteractiveNotification
+          {/* Right Actions: Standardized Navbar Area */}
+          <div className="hidden md:flex items-center space-x-2.5">
+            {/* Push Notification Toggle */}
+            <button
               onClick={handleTogglePush}
-              className={`rounded-xl border shadow-sm ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-medium border transition cursor-pointer ${
                 pushEnabled
-                  ? 'bg-teal-500/20 text-teal-300 border-teal-500/50'
-                  : 'bg-slate-800 text-slate-300 border-slate-700'
+                  ? 'bg-slate-800/90 hover:bg-slate-800 text-teal-300 border-teal-500/40'
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 border-slate-700/80'
               }`}
               title={pushEnabled ? '推播通知已啟用（點擊切換）' : '點擊開啟即時網頁與手機推播通知'}
-              glowColor={pushEnabled ? 'rgba(20, 184, 166, 0.45)' : 'rgba(99, 102, 241, 0.35)'}
             >
-              <div className="flex items-center space-x-2 text-xs font-semibold px-3 py-2">
-                <Volume2 className={`w-3.5 h-3.5 ${pushEnabled ? 'text-teal-400 animate-bounce' : 'text-slate-400'}`} />
-                <span>{pushEnabled ? '推播服務已啟用' : '開啟推播通知'}</span>
-                <span className={`w-2.5 h-2.5 rounded-full ${pushEnabled ? 'bg-emerald-400 animate-pulse' : 'bg-slate-500'}`}></span>
-              </div>
-            </MouseInteractiveNotification>
+              <Volume2 className={`w-3.5 h-3.5 ${pushEnabled ? 'text-teal-400' : 'text-slate-400'}`} />
+              <span>{pushEnabled ? '推播已開啟' : '開啟推播'}</span>
+              <span className={`w-2 h-2 rounded-full ${pushEnabled ? 'bg-teal-400' : 'bg-slate-500'}`} />
+            </button>
 
-            {/* Notification Bell Center with Mouse Interactive Dynamic Effect */}
-            <MouseInteractiveNotification
+            {/* Notification Bell */}
+            <button
               onClick={onOpenNotifications}
-              className="rounded-xl bg-slate-800 text-slate-300 hover:text-white border border-slate-700/90 shadow-sm"
+              className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition cursor-pointer"
               title="即時推播通知中心"
-              glowColor="rgba(244, 63, 94, 0.45)"
             >
-              <div className="relative p-2.5 flex items-center justify-center">
-                <Bell className="w-5 h-5 text-slate-200" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-slate-900 shadow">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-            </MouseInteractiveNotification>
+              <Bell className="w-4 h-4 text-slate-200" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center border border-slate-900">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
 
-            {/* Employer Profile Pill */}
+            {/* Employer Profile Button */}
             <button
               onClick={onOpenProfileModal}
-              className="flex items-center space-x-2.5 bg-slate-800 hover:bg-slate-700/80 border border-slate-700 text-slate-200 px-3 py-1.5 rounded-xl transition text-xs font-medium"
+              className="flex items-center space-x-2 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-200 px-3 py-1.5 rounded-xl transition text-xs font-medium cursor-pointer"
             >
-              <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-teal-400 font-bold border border-slate-600">
+              <div className="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-teal-300 text-[11px] font-bold">
                 張
               </div>
-              <div className="text-left">
-                <div className="text-slate-100 font-semibold leading-tight">張志明 雇主</div>
-                <div className="text-[10px] text-teal-400 flex items-center gap-1">
-                  <CheckCircle2 className="w-2.5 h-2.5" /> 身份已認證
-                </div>
-              </div>
+              <span className="text-slate-200 font-medium">張志明 雇主</span>
             </button>
           </div>
         </div>
