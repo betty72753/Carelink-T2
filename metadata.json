@@ -1,0 +1,6 @@
+{
+  "name": "外籍看護雇主管理平台",
+  "description": "提供外籍家庭看護工雇主健檢定期通知提醒、合約流程即時追蹤、線上文件電子簽署與推播通知服務",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
