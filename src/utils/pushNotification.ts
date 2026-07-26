@@ -46,13 +46,14 @@ export function sendWebPushNotification(title: string, options?: NotificationOpt
 
   if ('Notification' in window && Notification.permission === 'granted') {
     try {
-      const n = new Notification(title, {
+      const defaultOptions: Record<string, any> = {
         icon: '/favicon.ico',
         badge: '/favicon.ico',
         tag: 'caregiver-reminder',
         renotify: true,
         ...options
-      });
+      };
+      const n = new Notification(title, defaultOptions as NotificationOptions);
       n.onclick = () => {
         window.focus();
         n.close();

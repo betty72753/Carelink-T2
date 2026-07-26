@@ -13,3 +13,12 @@
   animation: breathing 1s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Hide scrollbars for clean mobile tab scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

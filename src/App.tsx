@@ -308,28 +308,32 @@ export default function App() {
         </div>
 
         {/* Primary Tab Navigation - Clean Standard SaaS Tab Styling */}
-        <div className={`p-1 rounded-xl flex space-x-1 overflow-x-auto text-xs font-medium border shadow-sm relative transition-colors ${
+        <div className={`p-1 rounded-xl flex space-x-1 overflow-x-auto no-scrollbar text-xs font-medium border shadow-sm relative transition-colors ${
           isLight ? 'bg-white border-slate-200' : 'bg-slate-900 border-slate-800/90'
         }`}>
           {[
             {
               id: 'health_checks',
               label: '🩺 定期健檢通知提醒',
+              shortLabel: '🩺 定期健檢',
               badge: pendingHealthChecksCount > 0 ? `${pendingHealthChecksCount}項到期` : null,
             },
             {
               id: 'workflow',
               label: '📋 合約申辦流程追蹤',
+              shortLabel: '📋 申辦流程',
               badge: '進行中',
             },
             {
               id: 'documents',
               label: '📝 必要文件線上簽章',
+              shortLabel: '📝 線上簽章',
               badge: pendingDocsCount > 0 ? `${pendingDocsCount}份待簽` : '已簽署',
             },
             {
               id: 'ai_assistant',
               label: '🤖 AI 雇主智囊與翻譯',
+              shortLabel: '🤖 AI 智囊',
               badge: 'AI 服務',
             }
           ].map((tab) => {
@@ -338,7 +342,7 @@ export default function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`relative flex-1 min-w-[140px] py-2.5 px-3 rounded-lg flex items-center justify-center gap-2 transition cursor-pointer z-10 ${
+                className={`relative flex-1 min-w-[110px] sm:min-w-[140px] py-2.5 px-2.5 sm:px-3 rounded-lg flex items-center justify-center gap-1.5 sm:gap-2 transition cursor-pointer z-10 flex-shrink-0 ${
                   isActive
                     ? isLight ? 'text-teal-700 font-bold' : 'text-teal-300 font-bold'
                     : isLight ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
@@ -360,10 +364,11 @@ export default function App() {
                     />
                   </>
                 )}
-                <span className="relative z-10">{tab.label}</span>
+                <span className="relative z-10 hidden sm:inline">{tab.label}</span>
+                <span className="relative z-10 sm:hidden whitespace-nowrap">{tab.shortLabel}</span>
                 {tab.badge && (
                   <span
-                    className={`relative z-10 text-[10px] px-1.5 py-0.2 rounded border ${
+                    className={`relative z-10 text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded border whitespace-nowrap ${
                       isActive
                         ? isLight ? 'bg-white text-teal-800 border-teal-300' : 'bg-slate-900 text-teal-300 border-teal-500/40'
                         : isLight ? 'bg-slate-100 text-slate-600 border-slate-300' : 'bg-slate-800/80 text-slate-400 border-slate-700/60'

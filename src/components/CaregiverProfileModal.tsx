@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ForeignCaregiver } from '../types';
-import { User, Passport, ShieldCheck, HeartPulse, Building2, Calendar, Phone, Edit, Save, X } from 'lucide-react';
+import { User, ShieldCheck, HeartPulse, Building2, Calendar, Phone, Edit, Save, X } from 'lucide-react';
 
 interface CaregiverProfileModalProps {
   caregiver: ForeignCaregiver;
